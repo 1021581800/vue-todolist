@@ -1,68 +1,56 @@
 <template>
-  <input id="inputEl" @keyup.enter="addTodo" />
-  <button @click="addTodo">提交</button>
-  <ul>
-    <li
-      :class="{ red: item.isRed }"
-      v-for="(item,index) in lists"
-      @click="changeColor(index)"
-    >{{ item.content }}</li>
-  </ul>
+  <div class="box">
+    <el-input class="input" @keyup.enter="addTodo" v-model="inputValue" />
+    <TodoList></TodoList>
+  </div>
 </template>
-<style>
-.red {
-  color: red;
-}
-</style>
+
 <script>
+import TodoList from "./components/ToDoList.vue";
+import { ref, watchEffect, provide } from 'vue'
 
-
-import { ref } from 'vue'
 export default {
+  components: {
+    TodoList
+  },
   setup() {
-    const haveLists = JSON.parse(localStorage.getItem("toDo"))
+    const inputValue = ref('')
 
-    // hq start
-    // let lists = ref(haveLists)
-    // if (lists.value === null) lists = ref([])
-    // hq end
-
-    // let lists = haveLists === null ? ref([]) : ref(haveLists)
-
-    // const lists = haveLists === null ? ref([]) : ref(haveLists)
-
-    // const lists = ref(haveLists === null ? [] : haveLists)
-
-    const lists = ref(haveLists || [])
+    const cache = JSON.parse(localStorage.getItem("toDo"))
+    const list = ref(cache || [])
+    provide('list', list)
     function addTodo() {
-      const addvalue = document.querySelector('#inputEl').value
-      if (addvalue === "") { alert('请输入内容') }
+      if (inputValue.value === "") {
+        alert('请输入内容')
+      }
       else {
-        lists.value.unshift({
-          content: addvalue,
+        list.value.unshift({
+          content: inputValue.value,
           isRed: false
         })
-        cunchu(lists)
+        inputValue.value = ""
       }
-      document.querySelector('#inputEl').value = ""
     }
 
-    function changeColor(index) {
-      lists.value[index].isRed = !lists.value[index].isRed
-      cunchu(lists)
-    }
-
-    function cunchu(lists) {
-      const listss = JSON.stringify(lists.value)
-      localStorage.setItem('toDo', listss)
-    }
+    watchEffect(() => {
+      const lists = JSON.stringify(list.value)
+      localStorage.setItem('toDo', lists)
+    })
 
     return {
-      lists, addTodo, changeColor
+      addTodo, inputValue
     }
   }
 }
 </script>
 
+<style>
+.box {
+  width: 480px;
+  margin: 0 auto;
+}
 
-
+.input {
+  margin-bottom: 10px;
+}
+</style>
